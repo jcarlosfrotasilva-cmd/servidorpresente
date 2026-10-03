@@ -1,0 +1,201 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  --color-brand-50: #f2f7fb;
+  --color-brand-100: #e0ebf5;
+  --color-brand-200: #bdd6e8;
+  --color-brand-300: #90b7d4;
+  --color-brand-400: #5c92ba;
+  --color-brand-500: #3a709d;
+  --color-brand-600: #2b5780;
+  --color-brand-700: #234768;
+  --color-brand-800: #1b3650;
+  --color-brand-900: #14283b;
+  --color-brand-950: #0b1926;
+
+  --color-accent-50: #eefdf9;
+  --color-accent-100: #c9f7ee;
+  --color-accent-200: #96ecdd;
+  --color-accent-300: #5ddbc7;
+  --color-accent-400: #2dc2ad;
+  --color-accent-500: #14a894;
+  --color-accent-600: #0d8578;
+  --color-accent-700: #0f6a61;
+
+  --shadow-card: 0 1px 2px rgba(15, 42, 66, 0.06), 0 12px 30px -18px rgba(15, 42, 66, 0.35);
+  --shadow-float: 0 18px 50px -22px rgba(11, 25, 38, 0.45);
+
+  --animate-fade-up: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.3s ease-out both;
+  --animate-pop: pop 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-ping-slow: ping-slow 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes ping-slow {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  75%,
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-bg {
+  background-color: #eef3f8;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(45, 194, 173, 0.12), transparent 42%),
+    radial-gradient(circle at 88% 0%, rgba(58, 112, 157, 0.18), transparent 45%);
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-slate-200/80 bg-white shadow-[var(--shadow-card)];
+  }
+
+  .card-header {
+    @apply flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4;
+  }
+
+  .label {
+    @apply mb-1.5 block text-[13px] font-semibold text-slate-600;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/12 disabled:cursor-not-allowed disabled:bg-slate-50;
+  }
+
+  .table-base {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .table-base thead th {
+    @apply whitespace-nowrap border-b border-slate-200 bg-slate-50/80 px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500;
+  }
+
+  .table-base tbody td {
+    @apply border-b border-slate-100 px-4 py-3 align-middle text-slate-700;
+  }
+
+  .table-base tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .table-base tbody tr:hover {
+    @apply bg-brand-50/50;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c3d2e0;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9fb5ca;
+  background-clip: content-box;
+}
+
+/* ---------- Impressão do Livro Ponto (documento oficial) ---------- */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    background-image: none !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-area {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  .print-page {
+    box-shadow: none !important;
+    border: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    font-size: 9.5px !important;
+  }
+
+  .print-break-after {
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .print-page table {
+    page-break-inside: auto;
+  }
+
+  .print-page tr {
+    page-break-inside: avoid;
+  }
+
+  .print-page thead {
+    display: table-header-group;
+  }
+}
