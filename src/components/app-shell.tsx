@@ -134,8 +134,8 @@ export function AppShell({
   };
 
   const sidebar = (
-    <div className="flex h-full min-h-0 flex-col bg-gradient-to-b from-brand-950 via-brand-900 to-brand-950 px-4 py-5 text-brand-100">
-      <div className="flex shrink-0 items-center gap-3 px-2">
+    <div className="flex h-full flex-col gap-6 bg-gradient-to-b from-brand-950 via-brand-900 to-brand-950 px-4 py-6 text-brand-100">
+      <div className="flex items-center gap-3 px-2">
         <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-accent-400 to-brand-500 text-sm font-black text-brand-950 shadow-lg">
           MF
         </span>
@@ -147,7 +147,11 @@ export function AppShell({
         </div>
       </div>
 
+<<<<<<< HEAD
       <nav className="sidebar-scroll mt-5 min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
+=======
+      <nav className="flex-1 space-y-1">
+>>>>>>> origin/main
         {nav.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
@@ -176,7 +180,7 @@ export function AppShell({
         })}
       </nav>
 
-      <div className="mt-4 shrink-0 space-y-3 rounded-2xl bg-white/8 p-3 ring-1 ring-inset ring-white/10">
+      <div className="space-y-3 rounded-2xl bg-white/8 p-3 ring-1 ring-inset ring-white/10">
         <div className="flex items-center gap-3">
           <Avatar nome={user.nome} />
           <div className="min-w-0">
@@ -267,6 +271,7 @@ export function AppShell({
                 <ShieldIcon className="h-3.5 w-3.5" />
                 {user.role === "GESTOR" ? "Gestor" : "Servidor"}
               </span>
+<<<<<<< HEAD
               <button
                 type="button"
                 onClick={() => setPasswordOpen(true)}
@@ -285,6 +290,8 @@ export function AppShell({
                 <LogoutIcon className="h-4 w-4" />
                 <span className="hidden sm:inline">Sair</span>
               </button>
+=======
+>>>>>>> origin/main
               <Avatar nome={user.nome} />
             </div>
           </div>
