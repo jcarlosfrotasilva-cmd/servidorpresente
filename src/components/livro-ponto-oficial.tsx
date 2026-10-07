@@ -8,7 +8,7 @@ import {
 import type { LivroPontoDocumento } from "@/lib/livro-ponto";
 import { formatDateBR, formatDateTimeBR } from "@/lib/time";
 
-const LINHAS_VERSO = 13;
+const LINHAS_VERSO = 20;
 
 function LogoBrasao({ escola }: { escola: EscolaConfig }) {
   const altura = Math.max(8, Math.min(45, escola.brasaoAlturaMm));
@@ -62,17 +62,23 @@ function Cabecalho({
         </div>
 
         <div className="flex-1 px-2 py-1">
-          {/* Topo centralizado */}
+          {/* Topo centralizado - GOVERNO */}
           <p className="text-[10px] font-bold text-center">{escola.governo}</p>
-          <p className="text-[10px] font-bold text-center mt-0.5">REGISTRO DE PONTO MÊS/ANO: {mesAno}</p>
           
-          {/* Informações à esquerda */}
-          <div className="mt-1 text-left">
+          {/* Logo abaixo, lado esquerdo - SECRETARIA e UNIDADE */}
+          <div className="mt-0.5 text-left">
             <p className="text-[8.5px] font-semibold">{escola.secretaria}</p>
             <p className="text-[8.5px]">
               <span className="font-semibold">UNIDADE:</span> {escola.unidade}
               {escola.cie ? ` — ${escola.cie}` : ""}
             </p>
+          </div>
+          
+          {/* Logo abaixo, centralizado - REGISTRO DE PONTO (fonte maior) */}
+          <p className="text-[12px] font-bold text-center mt-1">REGISTRO DE PONTO MÊS/ANO: {mesAno}</p>
+          
+          {/* Informações complementares à esquerda */}
+          <div className="mt-0.5 text-left">
             <p className="text-[7px]">
               {escola.diretoria}
             </p>
