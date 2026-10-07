@@ -454,7 +454,7 @@ export function LivroPontoVerso({
 }) {
   const { oficial, dias, totais, identificacao } = documento;
   const hoje = new Date().toLocaleDateString("pt-BR");
-  const linhasEmBranco = 32;
+  // Usando LINHAS_VERSO (20 pautas)
 
   const resumoCodigos = new Map<string, number>();
   const periodos = agruparPeriodos(
@@ -594,7 +594,7 @@ export function LivroPontoVerso({
         Observações complementares e compensações de horas
       </p>
       <div className="mt-3 space-y-[12px]">
-        {Array.from({ length: linhasEmBranco }).map((_, index) => (
+        {Array.from({ length: LINHAS_VERSO }).map((_, index) => (
           <div key={index} className="border-b border-black py-[10px]" />
         ))}
       </div>
