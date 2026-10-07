@@ -8,7 +8,7 @@ import {
 import type { LivroPontoDocumento } from "@/lib/livro-ponto";
 import { formatDateBR, formatDateTimeBR } from "@/lib/time";
 
-const LINHAS_VERSO = 24;
+const LINHAS_VERSO = 13;
 
 function LogoBrasao({ escola }: { escola: EscolaConfig }) {
   const altura = Math.max(8, Math.min(45, escola.brasaoAlturaMm));
@@ -61,21 +61,26 @@ function Cabecalho({
           {comBrasao ? <LogoBrasao escola={escola} /> : null}
         </div>
 
-        <div className="flex-1 px-2 py-1 text-left">
-          <p className="text-[10px] font-bold">{escola.governo}</p>
-          <p className="text-[9px] font-semibold">{escola.secretaria}</p>
-          <p className="text-[8.5px]">
-            <span className="font-semibold">UNIDADE:</span> {escola.unidade}
-            {escola.cie ? ` — ${escola.cie}` : ""}
-          </p>
-          <p className="text-[7.5px]">
-            {escola.diretoria}
-          </p>
-          <p className="text-[7.5px]">
-            {escola.endereco} — {escola.municipio}/{escola.uf}
-            {escola.telefone ? ` · Tel. ${escola.telefone}` : ""}
-          </p>
-          <p className="mt-0.5 text-[10px] font-bold">REGISTRO DE PONTO MÊS/ANO: {mesAno}</p>
+        <div className="flex-1 px-2 py-1">
+          {/* Topo centralizado */}
+          <p className="text-[10px] font-bold text-center">{escola.governo}</p>
+          <p className="text-[10px] font-bold text-center mt-0.5">REGISTRO DE PONTO MÊS/ANO: {mesAno}</p>
+          
+          {/* Informações à esquerda */}
+          <div className="mt-1 text-left">
+            <p className="text-[8.5px] font-semibold">{escola.secretaria}</p>
+            <p className="text-[8.5px]">
+              <span className="font-semibold">UNIDADE:</span> {escola.unidade}
+              {escola.cie ? ` — ${escola.cie}` : ""}
+            </p>
+            <p className="text-[7px]">
+              {escola.diretoria}
+            </p>
+            <p className="text-[7px]">
+              {escola.endereco} — {escola.municipio}/{escola.uf}
+              {escola.telefone ? ` · Tel. ${escola.telefone}` : ""}
+            </p>
+          </div>
         </div>
 
         <div className="flex w-[62px] shrink-0 items-start justify-end self-stretch px-1.5 py-1.5">
