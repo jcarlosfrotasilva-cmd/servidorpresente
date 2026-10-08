@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { ApiError, handleRoute, ok, readJson, reqString } from "@/lib/api";
 import { hashPassword, verifyPassword } from "@/lib/password";
-import { getCurrentUser, logAudit } from "@/lib/session";
+import { destroySession, getCurrentUser, logAudit } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +38,12 @@ export async function POST(request: Request) {
       entityId: user.id,
     });
 
-    return ok({ sucesso: true });
+    // Invalidar sessão atual para forçar novo login com a nova senha
+    await destroySession();
+
+    return ok({ 
+      sucesso: true, 
+      mensagem: "Senha alterada com sucesso. Faça login novamente com a nova senha."
+    });
   });
 }

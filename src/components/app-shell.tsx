@@ -122,7 +122,7 @@ export function AppShell({
         method: "POST",
         body: JSON.stringify({ senhaAtual: currentPassword, novaSenha: newPassword }),
       });
-      toast.success("Senha alterada", "Use a nova senha nos próximos acessos.");
+      toast.success("Senha alterada", "Por segurança, você foi deslogado. Faça login novamente com a nova senha.");
       setPasswordOpen(false);
       setCurrentPassword("");
       setNewPassword("");
@@ -304,7 +304,7 @@ export function AppShell({
         open={passwordOpen}
         onClose={() => setPasswordOpen(false)}
         title="Alterar minha senha"
-        description="A senha é pessoal e intransferível. Mínimo de 8 caracteres."
+        description="A senha é pessoal e intransferível. Após alterar, você precisará fazer login novamente."
         size="sm"
         footer={
           <>
