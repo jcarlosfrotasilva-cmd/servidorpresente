@@ -227,8 +227,12 @@ export function LivroPontoFrente({
         <tbody>
           {todosOsDias.map((numero) => {
             const dia = porDia.get(numero);
-            const sabado = dia?.diaSemana === "Sáb";
-            const domingo = dia?.diaSemana === "Dom";
+            // Calcular dia da semana diretamente do número (independe de ter horário cadastrado)
+            const dataCompleta = new Date(`${documento.mes}-${String(numero).padStart(2, "0")}T12:00:00Z`);
+            const diaSemanaNum = dataCompleta.getUTCDay();
+            const sabado = diaSemanaNum === 6;
+            const domingo = diaSemanaNum === 0;
+            const nomeDiaSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"][diaSemanaNum];
             const textoHoraEspecial = dia
               ? dia.ausenciaIntegral
                 ? "AUSÊNCIA TOTAL"
@@ -255,7 +259,7 @@ export function LivroPontoFrente({
                     sabado || domingo ? "text-[9px]" : "text-[7px] italic text-neutral-700"
                   }`}
                 >
-                  {textoHoraEspecial || (sabado ? "Sábado" : domingo ? "Domingo" : dia?.entrada ? "eletrônico" : "")}
+                  {textoHoraEspecial || (sabado ? "Sábado" : domingo ? "Domingo" : nomeDiaSemana || "")}
                 </td>
                 <td className="border border-black px-1 text-center font-mono">
                   {textoHoraEspecial ? (

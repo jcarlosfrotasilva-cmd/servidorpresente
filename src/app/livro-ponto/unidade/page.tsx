@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { asc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { ArrowRightIcon, BookIcon, DownloadIcon } from "@/components/icons";
 import { LivroPontoOficial } from "@/components/livro-ponto-oficial";
 import { BotaoImprimir } from "@/app/livro-ponto/imprimir-button";
@@ -17,28 +17,34 @@ export const metadata = { title: "Registro de Ponto da unidade" };
 export default async function LivroPontoUnidadePage({
   searchParams,
 }: {
-  searchParams: Promise<{ mes?: string; anexo?: string }>;
+  searchParams: Promise<{ mes?: string }>;
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role !== "GESTOR") redirect("/painel/livro-ponto");
 
-  const { mes: mesParam, anexo } = await searchParams;
+  const { mes: mesParam } = await searchParams;
   const mes = mesParam && /^\d{4}-\d{2}$/.test(mesParam) ? mesParam : currentMonth();
-  
 
   const servidores = await db
     .select({ id: employees.id })
     .from(employees)
-    .where(eq(employees.ativo, true))
-    .orderBy(asc(employees.rg));
+    .where(eq(employees.ativo, true));
 
-  const [documentos, escola] = await Promise.all([
-    Promise.all(servidores.map((servidor) => buildLivroPonto(servidor.id, mes))).then((lista) =>
-      lista.filter((item): item is NonNullable<typeof item> => Boolean(item)),
-    ),
-    getConfiguracao(),
-  ]);
+  const documentos = await Promise.all(
+    servidores.map((servidor) => buildLivroPonto(servidor.id, mes))
+  ).then((lista) => {
+    const docs = lista.filter((item): item is NonNullable<typeof item> => Boolean(item));
+    // Ordenar por RG (servidores sem RG vão para o final)
+    docs.sort((a, b) => {
+      const rgA = a.identificacao.rg || 'ZZZZZ';
+      const rgB = b.identificacao.rg || 'ZZZZZ';
+      return rgA.localeCompare(rgB);
+    });
+    return docs;
+  });
+
+  const escola = await getConfiguracao();
 
   return (
     <div className="min-h-screen bg-slate-200 py-0 sm:py-6">
@@ -58,7 +64,6 @@ export default async function LivroPontoUnidadePage({
           >
             <ArrowRightIcon className="h-4 w-4" /> Voltar
           </Link>
-
           <BotaoImprimir label="Imprimir todos" icon={<DownloadIcon className="h-4 w-4" />} />
         </div>
       </div>
@@ -75,9 +80,8 @@ export default async function LivroPontoUnidadePage({
               <LivroPontoOficial
                 documento={documento}
                 paginaAtual={paginaAtual}
-                totalPaginas={documentos.length}
+                totalPaginas={totalPaginas}
                 escola={escola}
-                
               />
             </div>
           );
