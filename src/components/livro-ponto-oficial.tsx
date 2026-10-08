@@ -275,7 +275,7 @@ export function LivroPontoFrente({
                     sabado || domingo ? "text-[9px]" : "text-[7px] italic text-neutral-700"
                   }`}
                 >
-                  {textoHoraEspecial || (sabado ? "Sábado" : domingo ? "Domingo" : dia?.saidaExpediente ? "eletrônico" : "")}
+                  {textoHoraEspecial || (sabado ? "Sábado" : domingo ? "Domingo" : "ASSINATURA ELETRÔNICA")}
                 </td>
                 <td className="border border-black px-1 text-center align-middle text-[8px] font-bold">
                   {temObservacao ? (
