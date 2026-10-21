@@ -111,6 +111,16 @@ export async function POST(request: Request) {
     const tipo = reqString(body, "tipo", "o tipo", { max: 20 });
     const minutos = reqInt(body, "minutos", "os minutos", { min: 1, max: 480 }) || 0;
     const dataUso = reqString(body, "dataUso", "a data de uso", { required: false, max: 10 });
+    
+    // Validar data de uso para DÉBITO e COMPENSAÇÃO
+    if ((tipo === "DEBITO" || tipo === "COMPENSACAO") && !dataUso) {
+      throw new ApiError("Data de uso é obrigatória para débito ou compensação.", 400);
+    }
+    
+    // Validar se data não é passada
+    if (dataUso && dataUso < new Date().toISOString().slice(0, 10)) {
+      throw new ApiError("Data de uso não pode ser no passado.", 400);
+    }
     const motivo = reqString(body, "motivo", "o motivo", { max: 500 });
 
     if (!["EXTRA", "DEBITO", "COMPENSACAO"].includes(tipo)) {

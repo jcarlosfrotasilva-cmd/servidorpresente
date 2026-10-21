@@ -76,6 +76,13 @@ export function BancoHorasServidor({ employeeId, nome }: { employeeId: number; n
   const solicitar = async () => {
     setSolicitando(true);
     try {
+      // Validar data de uso para DÉBITO e COMPENSAÇÃO
+      if ((form.tipo === "DEBITO" || form.tipo === "COMPENSACAO") && !form.dataUso) {
+        toast.error("Data de uso obrigatória", "Informe a data em que pretende usar as horas do banco.");
+        setSolicitando(false);
+        return;
+      }
+      
       await apiFetch("/api/banco-horas", {
         method: "POST",
         body: JSON.stringify({
@@ -247,16 +254,18 @@ export function BancoHorasServidor({ employeeId, nome }: { employeeId: number; n
               />
             </Field>
           </div>
-          {form.tipo === "DEBITO" && (
-            <Field label="Data de Uso">
+          {(form.tipo === "DEBITO" || form.tipo === "COMPENSACAO") && (
+            <Field label="Data de Uso" hint="Data em que pretende usar as horas do banco.">
               <Input
                 type="date"
                 value={form.dataUso}
+                min={new Date().toISOString().slice(0, 10)}
                 onChange={(e) => setForm({ ...form, dataUso: e.target.value })}
+                required
               />
             </Field>
           )}
-          <Field label="Motivo">
+          <Field label="Motivo *" hint="Obrigatório para todas as solicitações.">
             <Textarea
               value={form.motivo}
               onChange={(e) => setForm({ ...form, motivo: e.target.value })}
