@@ -39,6 +39,7 @@ const NAV_GESTOR = [
   { href: "/gestor/jornadas", label: "Jornadas de trabalho", icon: ClockIcon },
   { href: "/gestor/registros", label: "Registros de ponto", icon: CalendarIcon },
   { href: "/gestor/conferencia", label: "Conferência de frequência", icon: CheckIcon },
+  { href: "/gestor/banco-horas", label: "Banco de Horas", icon: ClockIcon },
   { href: "/gestor/calendario", label: "Feriados e ausências", icon: ShieldIcon },
   { href: "/gestor/livro-ponto", label: "Livro ponto", icon: BookIcon },
   { href: "/gestor/configuracao", label: "Configuração", icon: SettingsIcon },
@@ -51,6 +52,7 @@ const NAV_SERVIDOR = [
   { href: "/painel/registros", label: "Meus registros", icon: CalendarIcon },
   { href: "/painel/solicitacoes", label: "Retificações", icon: AlertIcon },
   { href: "/painel/livro-ponto", label: "Livro ponto", icon: BookIcon },
+  { href: "/painel/banco-horas", label: "Banco de Horas", icon: ClockIcon },
 ];
 
 function useLiveClock() {

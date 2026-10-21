@@ -52,6 +52,12 @@ export const employeeSchedules = pgTable(
   ],
 );
 
+export const bancoHorasTipo = pgEnum("banco_horas_tipo", [
+  "EXTRA",
+  "DEBITO",
+  "COMPENSACAO",
+]);
+
 export const entryOrigin = pgEnum("entry_origin", [
   "SERVIDOR",
   "GESTOR",
@@ -323,6 +329,70 @@ export const settings = pgTable("settings", {
   atualizadoPor: text("atualizado_por"),
 });
 
+
+/** Movimentações do Banco de Horas dos servidores. */
+export const bancoHoras = pgTable(
+  "banco_horas",
+  {
+    id: serial("id").primaryKey(),
+    employeeId: integer("employee_id")
+      .notNull()
+      .references(() => employees.id, { onDelete: "cascade" }),
+    data: date("data").notNull(),
+    tipo: bancoHorasTipo("tipo").notNull(),
+    minutos: integer("minutos").notNull(),
+    saldoAcumulado: integer("saldo_acumulado").notNull().default(0),
+    descricao: text("descricao"),
+    solicitacaoId: integer("solicitacao_id"),
+    aprovadoPorUserId: integer("aprovado_por_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    aprovadoEm: timestamp("aprovado_em", { withTimezone: true }),
+    validadeAte: date("validade_ate"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+);
+
+/** Solicitações de Banco de Horas (aguardando aprovação). */
+export const bancoHorasSolicitacoes = pgTable(
+  "banco_horas_solicitacoes",
+  {
+    id: serial("id").primaryKey(),
+    employeeId: integer("employee_id")
+      .notNull()
+      .references(() => employees.id, { onDelete: "cascade" }),
+    tipo: bancoHorasTipo("tipo").notNull(),
+    minutos: integer("minutos").notNull(),
+    dataSolicitacao: date("data_solicitacao").notNull(),
+    dataUso: date("data_uso"),
+    motivo: text("motivo").notNull(),
+    status: requestStatus("status").notNull().default("PENDENTE"),
+    solicitadoPorUserId: integer("solicitado_por_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    aprovadoPorUserId: integer("aprovado_por_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    aprovadoEm: timestamp("aprovado_em", { withTimezone: true }),
+    justificativaAprovacao: text("justificativa_aprovacao"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+);
+
+/** Configurações do Banco de Horas da unidade. */
+export const bancoHorasConfig = pgTable("banco_horas_config", {
+  id: integer("id").primaryKey().default(1),
+  validadeMeses: integer("validade_meses").notNull().default(6),
+  limiteUsoDiaMin: integer("limite_uso_dia_min").notNull().default(120),
+  limiteUsoMesMin: integer("limite_uso_mes_min").notNull().default(1200),
+  aprovacaoAutomaticaExtra: boolean("aprovacao_automatica_extra").notNull().default(false),
+  saldoNegativoPermitido: boolean("saldo_negativo_permitido").notNull().default(true),
+  saldoMinimoNegativoMin: integer("saldo_minimo_negativo_min").notNull().default(-2400),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 /** Trilha de auditoria das ações administrativas. */
 export const auditLogs = pgTable("audit_logs", {
   id: serial("id").primaryKey(),
@@ -343,3 +413,6 @@ export type SettingsRow = typeof settings.$inferSelect;
 export type WorkScheduleRow = typeof workSchedules.$inferSelect;
 export type TimeEntryRow = typeof timeEntries.$inferSelect;
 export type AdjustmentRequestRow = typeof adjustmentRequests.$inferSelect;
+export type BancoHorasRow = typeof bancoHoras.$inferSelect;
+export type BancoHorasSolicitacaoRow = typeof bancoHorasSolicitacoes.$inferSelect;
+export type BancoHorasConfigRow = typeof bancoHorasConfig.$inferSelect;
