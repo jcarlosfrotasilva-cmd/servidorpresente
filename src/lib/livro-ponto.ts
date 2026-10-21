@@ -1,5 +1,6 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, gte, inArray, lte } from "drizzle-orm";
 import { db } from "@/db";
+import { bancoHoras } from "@/db/schema";
 import { employees, livroPontoFechamentos, workSchedules } from "@/db/schema";
 import {
   LEGENDA_POR_ARQUIVO,
@@ -10,7 +11,7 @@ import {
 } from "@/lib/livro-ponto-types";
 import { buildEmployeeWeeks, buildMonthlyReport, type DayReportRow } from "@/lib/reports";
 import { weekSummary } from "@/lib/schedule";
-import { monthLabel, weekdayLabel } from "@/lib/time";
+import { dayOfWeek, monthEnd, monthLabel, weekdayLabel } from "@/lib/time";
 
 export type LivroPontoDia = {
   data: string;
@@ -65,6 +66,7 @@ export type LivroPontoOficial = {
 
 export type LivroPontoDocumento = {
   mes: string;
+  bancoHoras?: { id: number; data: string; tipo: string; minutos: number; descricao: string | null }[];
   mesLabel: string;
   competencia: string;
   protocolo: string;
@@ -191,8 +193,9 @@ export async function buildLivroPonto(
   employeeId: number,
   mes: string,
 ): Promise<LivroPontoDocumento | null> {
-  const [servidor] = await db
-    .select({
+  const [servidor, bancoHorasMovs] = await Promise.all([
+    db
+      .select({
       id: employees.id,
       nome: employees.nome,
       matricula: employees.matricula,
@@ -209,9 +212,21 @@ export async function buildLivroPonto(
     .from(employees)
     .leftJoin(workSchedules, eq(employees.jornadaId, workSchedules.id))
     .where(eq(employees.id, employeeId))
-    .limit(1);
+    .limit(1),
+    db
+      .select({
+        id: bancoHoras.id,
+        data: bancoHoras.data,
+        tipo: bancoHoras.tipo,
+        minutos: bancoHoras.minutos,
+        descricao: bancoHoras.descricao,
+      })
+      .from(bancoHoras)
+      .where(and(eq(bancoHoras.employeeId, employeeId), gte(bancoHoras.data, mes), lte(bancoHoras.data, monthEnd(mes)))),
+  ]);
 
-  if (!servidor) return null;
+  if (!servidor || !servidor[0]) return null;
+  const servidorData = servidor[0];
 
   // O Livro Ponto cobre a competência inteira: feriados e ausências já cadastrados
   // em datas futuras também constam no documento.
@@ -312,7 +327,7 @@ export async function buildLivroPonto(
     regimePlantao: "Não",
     horarioTrabalho,
     intervaloAlmoco,
-    horarioEstudante: servidor.horarioEstudante ? "Sim" : "Não",
+    horarioEstudante: servidorData.horarioEstudante ? "Sim" : "Não",
     mesAno: `${MESES_EXTENSO[Number(mes.slice(5, 7)) - 1]?.toUpperCase()} DE ${mes.slice(0, 4)}`,
     financeiro: {
       feriasDe: diasFerias[0]?.data ?? null,
@@ -336,20 +351,21 @@ export async function buildLivroPonto(
 
   return {
     mes,
+    bancoHoras: bancoHorasMovs || [],
     mesLabel: monthLabel(mes),
     competencia: `${String(mes.slice(5, 7)).padStart(2, "0")}/${mes.slice(0, 4)}`,
     protocolo: protocoloLivroPonto(employeeId, mes, totalMinutos),
     identificacao: {
-      nome: servidor.nome,
-      matricula: servidor.matricula,
-      rg: servidor.rg ?? "Não informado",
-      cpf: servidor.cpf ?? "Não informado",
-      cargo: servidor.cargo,
-      categoria: categoriaLabel(servidor.categoria),
-      vinculo: servidor.vinculo,
-      admissao: servidor.admissao,
-      horarioEstudante: servidor.horarioEstudante,
-      unidade: servidor.modeloNome ?? "Horário individual definido pela direção",
+      nome: servidorData.nome,
+      matricula: servidorData.matricula,
+      rg: servidorData.rg ?? "Não informado",
+      cpf: servidorData.cpf ?? "Não informado",
+      cargo: servidorData.cargo,
+      categoria: categoriaLabel(servidorData.categoria),
+      vinculo: servidorData.vinculo,
+      admissao: servidorData.admissao,
+      horarioEstudante: servidorData.horarioEstudante,
+      unidade: servidorData.modeloNome ?? "Horário individual definido pela direção",
       jornadaResumo:
         resumoSemana.dias > 0
           ? `${resumoSemana.dias} dia(s) por semana`
