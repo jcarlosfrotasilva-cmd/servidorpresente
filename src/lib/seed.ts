@@ -1,3 +1,4 @@
+import { bancoHorasConfig } from "@/db/schema";
 import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
@@ -96,6 +97,22 @@ async function bootstrap(): Promise<void> {
  * Feriados, pontos facultativos e ausências de DEMONSTRAÇÃO (idempotente).
  * Executado apenas em ambiente local ou com SEED_DEMO=true.
  */
+
+async function seedConfigBancoHoras(): Promise<void> {
+  const [exists] = await db.select().from(bancoHorasConfig).limit(1);
+  if (!exists) {
+    await db.insert(bancoHorasConfig).values({
+      id: 1,
+      validadeMeses: 6,
+      limiteUsoDiaMin: 120,
+      limiteUsoMesMin: 1200,
+      aprovacaoAutomaticaExtra: false,
+      saldoNegativoPermitido: true,
+      saldoMinimoNegativoMin: -2400,
+    });
+    console.log("[seed] Configuração do banco de horas criada");
+  }
+}
 async function seedCalendar(): Promise<void> {
   const [feriadosExistentes] = await db
     .select({ total: sql<number>`count(*)::int` })

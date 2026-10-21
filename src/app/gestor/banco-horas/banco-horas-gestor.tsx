@@ -39,10 +39,17 @@ export function BancoHorasGestor() {
   const [processando, setProcessando] = useState<number | null>(null);
   const [justificativa, setJustificativa] = useState("");
   const [confirmacao, setConfirmacao] = useState<{ id: number; aprovar: boolean } | null>(null);
+  const [erroConfig, setErroConfig] = useState<string | null>(null);
 
   const carregar = useCallback(async () => {
     setCarregando(true);
+    setErroConfig(null);
     try {
+      const configCheck = await apiFetch<{ config: any }>("/api/banco-horas/config");
+      if (!configCheck.config) {
+        setErroConfig("Configurações não inicializadas. Clique em 'Inicializar Configurações'.");
+      }
+      
       const [solicitacoesData, saldosData] = await Promise.all([
         apiFetch<{ solicitacoes: Solicitacao[] }>("/api/banco-horas/solicitacoes"),
         apiFetch<{ saldos: SaldoServidor[] }>("/api/banco-horas/saldos"),
@@ -93,11 +100,33 @@ export function BancoHorasGestor() {
         title="Banco de Horas"
         description="Aprove solicitações de horas extras e uso de banco, acompanhe saldos e histórico."
         action={
-          <Button variant="outline" onClick={() => void carregar()}>
-            <CheckIcon className="h-4 w-4" /> Atualizar
-          </Button>
+          <div className="flex flex-wrap gap-2.5">
+            {erroConfig && (
+              <Button variant="accent" onClick={async () => {
+                try {
+                  await apiFetch("/api/banco-horas/init", { method: "POST" });
+                  setErroConfig(null);
+                  toast.success("Configurações inicializadas", "Agora você pode usar o banco de horas.");
+                  void carregar();
+                } catch (error) {
+                  toast.error("Falha ao inicializar", (error as Error).message);
+                }
+              }}>
+                <CheckIcon className="h-4 w-4" /> Inicializar Configurações
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => void carregar()}>
+              <CheckIcon className="h-4 w-4" /> Atualizar
+            </Button>
+          </div>
         }
       />
+      
+      {erroConfig && (
+        <div className="rounded-xl bg-amber-50 px-4 py-3 text-[13px] text-amber-800 ring-1 ring-inset ring-amber-200">
+          <p className="font-semibold">⚠️ {erroConfig}</p>
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-2.5">
         {[
