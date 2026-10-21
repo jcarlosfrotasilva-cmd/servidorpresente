@@ -193,7 +193,7 @@ export async function buildLivroPonto(
   employeeId: number,
   mes: string,
 ): Promise<LivroPontoDocumento | null> {
-  const [servidor, bancoHorasMovs] = await Promise.all([
+  const [servidorResult, bancoHorasResult] = await Promise.all([
     db
       .select({
       id: employees.id,
@@ -213,20 +213,28 @@ export async function buildLivroPonto(
     .leftJoin(workSchedules, eq(employees.jornadaId, workSchedules.id))
     .where(eq(employees.id, employeeId))
     .limit(1),
-    db
-      .select({
-        id: bancoHoras.id,
-        data: bancoHoras.data,
-        tipo: bancoHoras.tipo,
-        minutos: bancoHoras.minutos,
-        descricao: bancoHoras.descricao,
-      })
-      .from(bancoHoras)
-      .where(and(eq(bancoHoras.employeeId, employeeId), gte(bancoHoras.data, mes), lte(bancoHoras.data, monthEnd(mes)))),
+    (async () => {
+      try {
+        return await db
+          .select({
+            id: bancoHoras.id,
+            data: bancoHoras.data,
+            tipo: bancoHoras.tipo,
+            minutos: bancoHoras.minutos,
+            descricao: bancoHoras.descricao,
+          })
+          .from(bancoHoras)
+          .where(and(eq(bancoHoras.employeeId, employeeId), gte(bancoHoras.data, mes), lte(bancoHoras.data, monthEnd(mes))));
+      } catch (e) {
+        // Tabela banco_horas não existe ainda
+        return [];
+      }
+    })(),
   ]);
 
-  if (!servidor || !servidor[0]) return null;
-  const servidorData = servidor[0];
+  if (!servidorResult || !servidorResult[0]) return null;
+  const servidorData = servidorResult[0];
+  const bancoHorasMovs = Array.isArray(bancoHorasResult) ? bancoHorasResult : [];
 
   // O Livro Ponto cobre a competência inteira: feriados e ausências já cadastrados
   // em datas futuras também constam no documento.
