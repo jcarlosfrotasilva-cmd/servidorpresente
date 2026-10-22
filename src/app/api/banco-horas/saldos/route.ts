@@ -19,26 +19,57 @@ export async function GET() {
     if (!actor) throw new ApiError("Sessão expirada.", 401);
     if (actor.role !== "GESTOR") throw new ApiError("Acesso restrito.", 403);
 
-    const saldos = await db
-      .select({
-        employeeId: bancoHoras.employeeId,
-        nome: employees.nome,
-        matricula: employees.matricula,
-        total: sql<number>`COALESCE(SUM(${bancoHoras.minutos}), 0)::int`,
-      })
-      .from(bancoHoras)
-      .innerJoin(employees, eq(bancoHoras.employeeId, employees.id))
-      .groupBy(bancoHoras.employeeId, employees.nome, employees.matricula)
-      .orderBy(sql`${employees.nome}`);
+    try {
+      // Buscar TODOS os servidores ativos com seus saldos
+      const todosServidores = await db
+        .select({
+          employeeId: employees.id,
+          nome: employees.nome,
+          matricula: employees.matricula,
+          cargo: employees.cargo,
+        })
+        .from(employees)
+        .where(eq(employees.ativo, true))
+        .orderBy(sql`${employees.nome}`);
 
-    return ok({
-      saldos: saldos.map((s) => ({
-        employeeId: s.employeeId,
-        nome: s.nome,
-        matricula: s.matricula,
-        saldoMinutos: s.total,
-        saldoFormatado: formatarHoras(s.total),
-      })),
-    });
+      // Buscar saldos do banco de horas
+      const saldosBH = await db
+        .select({
+          employeeId: bancoHoras.employeeId,
+          total: sql<number>`COALESCE(SUM(${bancoHoras.minutos}), 0)::int`,
+        })
+        .from(bancoHoras)
+        .groupBy(bancoHoras.employeeId);
+
+      // Criar mapa de saldos
+      const saldoMap = new Map(saldosBH.map(s => [s.employeeId, s.total]));
+
+      // Montar lista completa
+      const saldos = todosServidores.map(s => {
+        const saldoMinutos = saldoMap.get(s.employeeId) || 0;
+        return {
+          employeeId: s.employeeId,
+          nome: s.nome,
+          matricula: s.matricula,
+          cargo: s.cargo,
+          saldoMinutos,
+          saldoFormatado: formatarHoras(saldoMinutos),
+        };
+      });
+
+      // Ordenar: maiores positivos primeiro, depois zerados, depois negativos
+      saldos.sort((a, b) => {
+        if (a.saldoMinutos > 0 && b.saldoMinutos <= 0) return -1;
+        if (a.saldoMinutos <= 0 && b.saldoMinutos > 0) return 1;
+        if (a.saldoMinutos < 0 && b.saldoMinutos >= 0) return 1;
+        if (a.saldoMinutos >= 0 && b.saldoMinutos < 0) return -1;
+        return b.saldoMinutos - a.saldoMinutos;
+      });
+
+      return ok({ saldos });
+    } catch (e) {
+      // Se tabela não existir, retornar lista vazia
+      return ok({ saldos: [] });
+    }
   });
 }

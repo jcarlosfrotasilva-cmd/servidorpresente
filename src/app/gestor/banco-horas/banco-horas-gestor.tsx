@@ -32,7 +32,8 @@ type SaldoServidor = {
 
 export function BancoHorasGestor() {
   const toast = useToast();
-  const [aba, setAba] = useState<"pendentes" | "saldos" | "historico">("pendentes");
+  const [aba, setAba] = useState<"pendentes" | "saldos" | "historico">("saldos");
+  const [filtroSaldo, setFiltroSaldo] = useState<"todos" | "positivo" | "negativo" | "zerado">("todos");
   const [solicitacoes, setSolicitacoes] = useState<Solicitacao[]>([]);
   const [saldos, setSaldos] = useState<SaldoServidor[]>([]);
   const [carregando, setCarregando] = useState(true);
